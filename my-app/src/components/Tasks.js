@@ -4,17 +4,19 @@ import TaskItem from './TaskItem';
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await axios.get('/api/tasks', {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks`, {
           headers: { 'x-auth-token': localStorage.getItem('token') }
         });
         setTasks(res.data);
+        setError(null);
       } catch (err) {
-        console.error('Error fetching tasks:', err.response?.data?.msg || err.message);
-        alert('Failed to fetch tasks: ' + (err.response?.data?.msg || 'Unknown error'));
+        console.error('Error fetching tasks:', err);
+        setError(err.response?.data?.msg || 'Failed to fetch tasks');
       }
     };
     fetchTasks();
@@ -23,12 +25,13 @@ const Tasks = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl mb-4">Your Tasks</h1>
-      {tasks.length === 0 ? (
+      {error && <p className="text-red-500">{error}</p>}
+      {tasks.length === 0 && !error ? (
         <p>No tasks found</p>
       ) : (
         <div>
           {tasks.map(task => (
-            <TaskItem key={task._id} task={task} />
+            <TaskItem key={task._id} task={task} setTasks={setTasks} />
           ))}
         </div>
       )}
