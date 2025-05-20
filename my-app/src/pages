@@ -1,0 +1,61 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import useLocalStorageState from '../hooks/useLocalStorageState';
+import { STORAGE_KEY, OPERATOR_STORAGE_KEY, OPERATORS } from '../constants';
+import Header from '../components/Header';
+import WelcomeSection from '../components/WelcomeSection';
+import Select from '../components/Select';
+import RecordsCount from '../components/RecordsCount';
+import QuickActionButton from '../components/QuickActionButton';
+import RecordCard from '../components/RecordCard';
+
+const HomeScreen = () => {
+  const [records, setRecords] = useLocalStorageState(STORAGE_KEY, []);
+  const [currentOperator, setCurrentOperator] = useLocalStorageState(OPERATOR_STORAGE_KEY, OPERATORS[0]);
+  const navigate = useNavigate();
+
+  const handleDeleteRecord = (id) => {
+    const updated = records.filter(r => r.id !== id);
+    setRecords(updated);
+  };
+
+  const displayedRecords = [...records].reverse().slice(0, 3);
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <Header title="Журнал РРЛ" />
+      <WelcomeSection />
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ marginBottom: '16px' }}>Выбор оператора</h3>
+        <Select
+          label="Текущий оператор"
+          value={currentOperator}
+          onValueChange={setCurrentOperator}
+          options={OPERATORS}
+          placeholder="Выберите оператора"
+        />
+      </div>
+      <RecordsCount count={records.length} />
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px' }}>Быстрые действия</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+          <QuickActionButton title="Добавить запись" onPress={() => navigate('/new-record')} />
+          <QuickActionButton title="История записей" onPress={() => navigate('/history')} />
+          <QuickActionButton title="Настройки" onPress={() => navigate('/settings')} />
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px' }}>Последние записи</div>
+        {displayedRecords.length > 0 ? (
+          displayedRecords.map(record => (
+            <RecordCard key={record.id} record={record} onDelete={handleDeleteRecord} />
+          ))
+        ) : (
+          <p>Нет записей</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default HomeScreen;
